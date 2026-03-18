@@ -1,0 +1,17 @@
+{
+  "name": "supply-chain-ux",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.163.0",
+    "gsap": "^3.12.5"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0"
+  }
+}
