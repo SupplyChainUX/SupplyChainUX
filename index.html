@@ -4,34 +4,56 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Oscar Coello — Supply Chain UX Designer</title>
-    <!-- Proxima Nova via Adobe Fonts — replace YOUR_KIT_ID with your Typekit kit ID -->
-    <!-- <link rel="stylesheet" href="https://use.typekit.net/YOUR_KIT_ID.css" /> -->
-    <!-- Fallback: Montserrat (very close geometric sans-serif) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <!-- Three.js canvas — fixed full-screen background -->
+    <!-- Three.js canvas -->
     <canvas id="three-canvas"></canvas>
 
-    <!-- Top navigation -->
+    <!-- Hub tooltip -->
+    <div id="hub-tooltip"></div>
+
+    <!-- Top navigation: links left | logo centered | dots right -->
     <nav id="nav">
-      <div class="nav-logo">
-        <span class="nav-logo-name">OC</span>
-      </div>
       <div class="nav-links">
         <button class="nav-link active" data-section="0">Home</button>
         <button class="nav-link" data-section="1">About</button>
         <button class="nav-link" data-section="2">Work</button>
-        <button class="nav-link" data-section="3">Contact</button>
+        <button class="nav-link" data-section="3">Reviews</button>
+        <button class="nav-link" data-section="4">Contact</button>
       </div>
+
+      <!-- Logo — absolutely centered via CSS -->
+      <div class="nav-logo" aria-label="Oscar Coello Supply Chain UX Designer">
+        <!-- Inline truck SVG matching the logo -->
+        <svg class="nav-logo-truck" viewBox="0 0 56 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Outer frame -->
+          <rect x="1" y="4" width="40" height="24" rx="3" fill="#31465D"/>
+          <!-- Cargo upper (off-white) -->
+          <rect x="3" y="6" width="28" height="12" rx="2" fill="#FCFCFC"/>
+          <!-- Cargo lower (cyan) -->
+          <rect x="3" y="18" width="28" height="8" rx="1" fill="#18CEFE"/>
+          <!-- Cabin (turquoise) -->
+          <rect x="31" y="8" width="10" height="18" rx="2" fill="#1FCFB4"/>
+          <!-- Rear wheel -->
+          <circle cx="10" cy="30" r="5" fill="#31465D"/>
+          <circle cx="10" cy="30" r="2.5" fill="#FCFCFC"/>
+          <!-- Front C wheel -->
+          <path d="M44 35 A7 7 0 1 1 44 23" stroke="#31465D" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          <path d="M44 33.5 A5.5 5.5 0 1 1 44 24.5" stroke="#FCFCFC" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span class="nav-logo-name">OC</span>
+      </div>
+
       <div class="nav-dots">
         <button class="nav-dot active" data-section="0" aria-label="Home"></button>
         <button class="nav-dot" data-section="1" aria-label="About"></button>
         <button class="nav-dot" data-section="2" aria-label="Work"></button>
-        <button class="nav-dot" data-section="3" aria-label="Contact"></button>
+        <button class="nav-dot" data-section="3" aria-label="Reviews"></button>
+        <button class="nav-dot" data-section="4" aria-label="Contact"></button>
       </div>
     </nav>
 
@@ -45,10 +67,10 @@
       </div>
     </div>
 
-    <!-- Scroll container — sections snap here -->
+    <!-- Scroll container -->
     <main id="scroll-container">
 
-      <!-- ── Section 0: Hero ─────────────────────────────────── -->
+      <!-- ── Section 0: Home ──────────────────────────────────── -->
       <section class="scene-section" data-index="0" id="section-hero">
         <div class="hero-content">
           <div class="hero-eyebrow">Supply Chain UX Designer</div>
@@ -60,7 +82,7 @@
         </div>
       </section>
 
-      <!-- ── Section 1: About ───────────────────────────────── -->
+      <!-- ── Section 1: About ────────────────────────────────── -->
       <section class="scene-section" data-index="1" id="section-about">
         <div class="panel-overlay">
           <div class="panel-inner">
@@ -95,7 +117,7 @@
         </div>
       </section>
 
-      <!-- ── Section 2: Work ────────────────────────────────── -->
+      <!-- ── Section 2: Work ─────────────────────────────────── -->
       <section class="scene-section" data-index="2" id="section-work">
         <div class="panel-overlay panel-overlay--wide">
           <div class="panel-inner">
@@ -212,8 +234,183 @@
         </div>
       </section>
 
-      <!-- ── Section 3: Contact ─────────────────────────────── -->
-      <section class="scene-section" data-index="3" id="section-contact">
+      <!-- ── Section 3: Reviews ──────────────────────────────── -->
+      <section class="scene-section" data-index="3" id="section-reviews">
+        <div class="panel-overlay panel-overlay--wide">
+          <div class="panel-inner">
+            <div class="panel-tag reviews-header">What Colleagues Say</div>
+            <h2>Reviews</h2>
+
+            <div class="reviews-carousel" id="reviews-carousel">
+              <div class="reviews-track" id="reviews-track">
+
+                <!-- Review 1 -->
+                <div class="review-card">
+                  <div class="review-card-inner">
+                    <div class="review-avatar" aria-label="Sarah Nay">
+                      <span class="review-avatar-initials">SN</span>
+                    </div>
+                    <div class="review-body">
+                      <p class="review-quote">Oscar was a great addition to our team. He was quickly seen as a go-to resource for all things UX Design. He brought great insights, was eager to grow, and a just an all around positive and kind person to work with.</p>
+                      <div class="review-author">
+                        <span class="review-name">Sarah Nay</span>
+                        <span class="review-title">CEO</span>
+                        <span class="review-company">Duct Tape Marketing</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Review 2 -->
+                <div class="review-card">
+                  <div class="review-card-inner">
+                    <div class="review-avatar" aria-label="Chris Chevrier">
+                      <span class="review-avatar-initials">CC</span>
+                    </div>
+                    <div class="review-body">
+                      <p class="review-quote">Oscar is someone who very quickly learned the complex workings of our pharmacy as well as understood the multiple applications and processes that we have in use here.</p>
+                      <div class="review-author">
+                        <span class="review-name">Chris Chevrier</span>
+                        <span class="review-title">Business Analyst Manager</span>
+                        <span class="review-company">BioPlus Specialty Pharmacy</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Review 3 -->
+                <div class="review-card">
+                  <div class="review-card-inner">
+                    <div class="review-avatar" aria-label="Cassandra Mattson">
+                      <span class="review-avatar-initials">CM</span>
+                    </div>
+                    <div class="review-body">
+                      <p class="review-quote">Not only is he a great designer, but he is an amazing team player and hard worker. I am grateful I had the opportunity to work with and learn from Oscar!</p>
+                      <div class="review-author">
+                        <span class="review-name">Cassandra Mattson</span>
+                        <span class="review-title">Senior UX Researcher</span>
+                        <span class="review-company">Standard Care, Inc.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Review 4 -->
+                <div class="review-card">
+                  <div class="review-card-inner">
+                    <div class="review-avatar" aria-label="Ashlee Barsky">
+                      <span class="review-avatar-initials">AB</span>
+                    </div>
+                    <div class="review-body">
+                      <p class="review-quote">I would definitely recommend Oscar as a designer because of his willingness to learn, his ability to understand requirements and his enthusiasm in tackling different challenges.</p>
+                      <div class="review-author">
+                        <span class="review-name">Ashlee Barsky</span>
+                        <span class="review-title">UX Designer</span>
+                        <span class="review-company">BioPlus Specialty Pharmacy</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Review 5 -->
+                <div class="review-card">
+                  <div class="review-card-inner">
+                    <div class="review-avatar" aria-label="Alice Liu">
+                      <span class="review-avatar-initials">AL</span>
+                    </div>
+                    <div class="review-body">
+                      <p class="review-quote">He brought up insightful questions and acted as the perfect advocate for the user's needs. He is attentive to details and has an excellent design instinct.</p>
+                      <div class="review-author">
+                        <span class="review-name">Alice Liu</span>
+                        <span class="review-title">UX Designer &amp; Researcher</span>
+                        <span class="review-company">Standard Care, Inc.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Review 6 -->
+                <div class="review-card">
+                  <div class="review-card-inner">
+                    <div class="review-avatar" aria-label="Emily Sarani">
+                      <span class="review-avatar-initials">ES</span>
+                    </div>
+                    <div class="review-body">
+                      <p class="review-quote">He worked well with the developers and took time to understand why the developers ran into issues. Oscar is flexible and hard-working and a true team-player.</p>
+                      <div class="review-author">
+                        <span class="review-name">Emily Sarani</span>
+                        <span class="review-title">Full-Stack Developer</span>
+                        <span class="review-company">Thrift Finder</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Review 7 -->
+                <div class="review-card">
+                  <div class="review-card-inner">
+                    <div class="review-avatar" aria-label="Tonya Montgomery">
+                      <span class="review-avatar-initials">TM</span>
+                    </div>
+                    <div class="review-body">
+                      <p class="review-quote">I've observed him facilitate user testing . . . lead stakeholder meetings and more. It was a pleasure working with Oscar and I would not hesitate to do so again!</p>
+                      <div class="review-author">
+                        <span class="review-name">Tonya Montgomery</span>
+                        <span class="review-title">UX Designer</span>
+                        <span class="review-company">Standard Care, Inc.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Review 8 -->
+                <div class="review-card">
+                  <div class="review-card-inner">
+                    <div class="review-avatar" aria-label="Lorraine Leslie">
+                      <span class="review-avatar-initials">LL</span>
+                    </div>
+                    <div class="review-body">
+                      <p class="review-quote">When on occasion our dev team ran into a snag, Oscar was quick to come up with solutions that maintained the quality of our project.</p>
+                      <div class="review-author">
+                        <span class="review-name">Lorraine Leslie</span>
+                        <span class="review-title">Front-End Developer</span>
+                        <span class="review-company">Thrift Finder</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div><!-- /reviews-track -->
+            </div><!-- /reviews-carousel -->
+
+            <div class="reviews-nav">
+              <button class="reviews-nav-btn" id="reviews-prev" aria-label="Previous review">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="reviews-dots" id="reviews-dots">
+                <button class="reviews-dot active" data-review="0" aria-label="Review 1"></button>
+                <button class="reviews-dot" data-review="1" aria-label="Review 2"></button>
+                <button class="reviews-dot" data-review="2" aria-label="Review 3"></button>
+                <button class="reviews-dot" data-review="3" aria-label="Review 4"></button>
+                <button class="reviews-dot" data-review="4" aria-label="Review 5"></button>
+                <button class="reviews-dot" data-review="5" aria-label="Review 6"></button>
+                <button class="reviews-dot" data-review="6" aria-label="Review 7"></button>
+                <button class="reviews-dot" data-review="7" aria-label="Review 8"></button>
+              </div>
+              <button class="reviews-nav-btn" id="reviews-next" aria-label="Next review">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 4: Contact ──────────────────────────────── -->
+      <section class="scene-section" data-index="4" id="section-contact">
         <div class="panel-overlay">
           <div class="panel-inner">
             <div class="panel-tag">Let's Connect</div>

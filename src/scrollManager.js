@@ -1,21 +1,20 @@
 import gsap from 'gsap';
 import { state } from './state.js';
 
-let currentIndex = 0;
+let currentIndex  = 0;
 let isAnimating   = false;
 let drivingTween  = null;
 
-const SECTION_COUNT = 4;
+const SECTION_COUNT = 5;
 
 // ── Init ──────────────────────────────────────────────────────
 export function initScrollManager() {
   const container = document.getElementById('scroll-container');
 
-  // ── Wheel / keyboard navigation ──────────────────────────────
   window.addEventListener('wheel', onWheel, { passive: false });
   window.addEventListener('keydown', onKeyDown);
 
-  // ── Touch support ────────────────────────────────────────────
+  // Touch support
   let touchStartY = 0;
   window.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
   window.addEventListener('touchend', e => {
@@ -23,7 +22,7 @@ export function initScrollManager() {
     if (Math.abs(delta) > 40) navigate(delta > 0 ? 1 : -1);
   }, { passive: true });
 
-  // ── Nav dot / link clicks ─────────────────────────────────────
+  // Nav dot / link clicks
   document.querySelectorAll('[data-section]').forEach(el => {
     el.addEventListener('click', () => {
       const idx = parseInt(el.dataset.section, 10);
@@ -31,7 +30,7 @@ export function initScrollManager() {
     });
   });
 
-  // ── Expandable project cards ──────────────────────────────────
+  // Expandable project cards
   document.querySelectorAll('.card-toggle').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
@@ -44,14 +43,14 @@ export function initScrollManager() {
     });
   });
 
-  // ── Contact form ──────────────────────────────────────────────
+  // Contact form
   const form = document.getElementById('contact-form');
   if (form) {
     form.addEventListener('submit', e => {
       e.preventDefault();
       const btn = form.querySelector('.cta-btn--submit');
       btn.textContent = 'Message Sent!';
-      btn.style.background = '#1E9999';
+      btn.style.background = 'linear-gradient(135deg, #1FCFB4, #18CEFE)';
       setTimeout(() => {
         btn.textContent = 'Send Message';
         btn.style.background = '';
@@ -60,8 +59,43 @@ export function initScrollManager() {
     });
   }
 
-  // ── Initial reveal of hero section ───────────────────────────
+  // Reviews carousel
+  initReviewsCarousel();
+
+  // Initial reveal
   revealSection(0, false);
+}
+
+// ── Reviews Carousel ──────────────────────────────────────────
+function initReviewsCarousel() {
+  const track = document.getElementById('reviews-track');
+  const dots  = document.querySelectorAll('.reviews-dot');
+  const prevBtn = document.getElementById('reviews-prev');
+  const nextBtn = document.getElementById('reviews-next');
+  if (!track) return;
+
+  let reviewIndex = 0;
+  const reviewCount = 8;
+
+  function goToReview(idx) {
+    reviewIndex = ((idx % reviewCount) + reviewCount) % reviewCount;
+    track.style.transform = `translateX(-${reviewIndex * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === reviewIndex));
+  }
+
+  prevBtn && prevBtn.addEventListener('click', e => { e.stopPropagation(); goToReview(reviewIndex - 1); });
+  nextBtn && nextBtn.addEventListener('click', e => { e.stopPropagation(); goToReview(reviewIndex + 1); });
+  dots.forEach(d => {
+    d.addEventListener('click', e => {
+      e.stopPropagation();
+      goToReview(parseInt(d.dataset.review, 10));
+    });
+  });
+
+  // Auto-advance when on reviews section (every 6s)
+  setInterval(() => {
+    if (state.currentSection === 3) goToReview(reviewIndex + 1);
+  }, 6000);
 }
 
 // ── Wheel handler ─────────────────────────────────────────────
@@ -86,14 +120,20 @@ function navigate(dir) {
 function navigateTo(index) {
   if (isAnimating || index === currentIndex) return;
 
-  const prevIndex  = currentIndex;
-  const direction  = index > currentIndex ? 1 : -1;
-  currentIndex     = index;
-  isAnimating      = true;
+  const prevIndex = currentIndex;
+  const direction = index > currentIndex ? 1 : -1;
+  currentIndex = index;
+  isAnimating  = true;
 
   state.isDriving        = true;
   state.drivingDirection = direction;
   state.currentSection   = index;
+
+  // ── Hub snap (fires immediately, parallel with truck animation) ──
+  if (window.__snapToHub) window.__snapToHub(index);
+
+  // ── Hide outgoing foreground shape ───────────────────────────
+  if (window.__hideFgShape) window.__hideFgShape(prevIndex);
 
   // Kill previous driving tween
   if (drivingTween) drivingTween.kill();
@@ -108,14 +148,13 @@ function navigateTo(index) {
   // Hide current section content
   hideSection(prevIndex);
 
-  // Scroll the container
+  // Scroll to target
   const container = document.getElementById('scroll-container');
   gsap.to(container, {
     scrollTop: index * window.innerHeight,
     duration: 1.1,
     ease: 'power2.inOut',
     onComplete: () => {
-      // Ramp driving progress down (truck slows to a stop)
       if (drivingTween) drivingTween.kill();
       drivingTween = gsap.to(state, {
         drivingProgress: 0,
@@ -123,12 +162,15 @@ function navigateTo(index) {
         ease: 'power2.out',
         onComplete: () => {
           state.isDriving = false;
-          isAnimating = false;
+          isAnimating     = false;
         },
       });
 
-      // Reveal new section content with a slight delay (truck settling)
-      gsap.delayedCall(0.2, () => revealSection(index, true));
+      gsap.delayedCall(0.2, () => {
+        revealSection(index, true);
+        // ── Show incoming foreground shape ────────────────────
+        if (window.__showFgShape) window.__showFgShape(index);
+      });
     },
   });
 
@@ -140,12 +182,11 @@ function navigateTo(index) {
 function revealSection(index, animate) {
   const section = document.querySelector(`.scene-section[data-index="${index}"]`);
   if (!section) return;
-
   const target = section.querySelector('.panel-overlay, .hero-content');
   if (!target) return;
 
   const isMobile = window.innerWidth <= 768;
-  const fromX = isMobile ? 0 : -20;
+  const fromX    = isMobile ? 0 : -20;
 
   if (animate) {
     gsap.fromTo(target,
@@ -153,7 +194,6 @@ function revealSection(index, animate) {
       { opacity: 1, x: 0, duration: 0.55, ease: 'power2.out' }
     );
   } else {
-    // Instant reveal (initial load)
     gsap.set(target, { opacity: 1, x: 0 });
   }
 }
@@ -161,14 +201,12 @@ function revealSection(index, animate) {
 function hideSection(index) {
   const section = document.querySelector(`.scene-section[data-index="${index}"]`);
   if (!section) return;
-
   const target = section.querySelector('.panel-overlay, .hero-content');
   if (!target) return;
-
   gsap.to(target, { opacity: 0, x: -15, duration: 0.3, ease: 'power2.in' });
 }
 
-// ── Nav UI updates ────────────────────────────────────────────
+// ── Nav UI ────────────────────────────────────────────────────
 function updateNavDots(index) {
   document.querySelectorAll('.nav-dot').forEach((dot, i) => {
     dot.classList.toggle('active', i === index);
@@ -184,5 +222,4 @@ function updateScrollHint(index) {
   hint.classList.toggle('hidden', index > 0);
 }
 
-// ── Public getter ─────────────────────────────────────────────
 export function getCurrentSection() { return currentIndex; }

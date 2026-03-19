@@ -1,155 +1,174 @@
 import * as THREE from 'three';
 
 /**
- * Builds a low-poly stylized freight truck matching the OC logo.
- * Returns { group, wheels, bodyMeshes } for animation.
+ * Builds a logo-accurate 3D truck for Oscar Coello's Supply Chain UX portfolio.
  *
- * Truck faces +X direction (drives to the right).
- * Wheel bottoms sit at local y = 0, so position the group at sphere-top.
+ * Color mapping from brand spec:
+ *   Navy   #31465D → outer frame, undercarriage, C-wheel extruded sides
+ *   Cyan   #18CEFE → lower cargo stripe
+ *   Turquoise #1FCFB4 → cabin (emissive on hover)
+ *   Off-White #FCFCFC → upper cargo, C-wheel face (emissive on hover)
+ *
+ * Truck faces +X direction. Wheel bottoms at local y ≈ 0.
+ * Returns { group, wheels, emissiveMeshes, hoverMeshes }
  */
 export function createTruck() {
   const group = new THREE.Group();
 
-  // ── Materials ────────────────────────────────────────────────
-  const cargoMat = new THREE.MeshStandardMaterial({
-    color: 0xECF2F8,
-    roughness: 0.75,
+  // ── Materials ──────────────────────────────────────────────────
+  const navyMat = new THREE.MeshStandardMaterial({
+    color: 0x31465D,
+    roughness: 0.85,
     metalness: 0.05,
   });
 
-  const cabMat = new THREE.MeshStandardMaterial({
-    color: 0x2BC8C8,
+  const cargoUpperMat = new THREE.MeshStandardMaterial({
+    color: 0xFCFCFC,
     roughness: 0.55,
-    metalness: 0.15,
+    metalness: 0.05,
+    emissive: new THREE.Color(0xFCFCFC),
+    emissiveIntensity: 0,
   });
 
-  const cabDarkMat = new THREE.MeshStandardMaterial({
-    color: 0x1E9999,
+  const cargoLowerMat = new THREE.MeshStandardMaterial({
+    color: 0x18CEFE,
     roughness: 0.6,
     metalness: 0.1,
   });
 
-  const glassMat = new THREE.MeshStandardMaterial({
-    color: 0xA8D8E8,
-    roughness: 0.05,
-    metalness: 0.2,
+  const cabMat = new THREE.MeshStandardMaterial({
+    color: 0x1FCFB4,
+    roughness: 0.3,
+    metalness: 0.12,
     transparent: true,
-    opacity: 0.75,
+    opacity: 0.92,
+    emissive: new THREE.Color(0x1FCFB4),
+    emissiveIntensity: 0,
+  });
+
+  const cWheelFaceMat = new THREE.MeshStandardMaterial({
+    color: 0xFCFCFC,
+    roughness: 0.45,
+    metalness: 0.05,
+    emissive: new THREE.Color(0xFCFCFC),
+    emissiveIntensity: 0,
+  });
+
+  const cWheelSideMat = new THREE.MeshStandardMaterial({
+    color: 0x31465D,
+    roughness: 0.8,
+    metalness: 0.05,
   });
 
   const tireMat = new THREE.MeshStandardMaterial({
-    color: 0x1A2E3F,
+    color: 0x1E2B3A,
     roughness: 0.95,
     metalness: 0.0,
   });
 
   const hubMat = new THREE.MeshStandardMaterial({
-    color: 0xCDD8E2,
-    roughness: 0.4,
-    metalness: 0.3,
+    color: 0xFCFCFC,
+    roughness: 0.5,
+    metalness: 0.1,
+    emissive: new THREE.Color(0xFCFCFC),
+    emissiveIntensity: 0,
   });
 
-  const undercarriageMat = new THREE.MeshStandardMaterial({
-    color: 0x1E2D3D,
-    roughness: 0.9,
-  });
+  // ── Outer Frame (navy border behind everything) ────────────────
+  // This acts as the thick navy outline visible around the truck edges
+  const outerFrameGeo = new THREE.BoxGeometry(2.18, 1.08, 0.64);
+  const outerFrameMesh = new THREE.Mesh(outerFrameGeo, navyMat);
+  outerFrameMesh.position.set(-0.01, 0.62, 0);
+  group.add(outerFrameMesh);
 
-  // ── Cargo Body ───────────────────────────────────────────────
-  // Width 1.35, Height 0.78, Depth 0.58. Centered at rear.
-  const cargoGeo = new THREE.BoxGeometry(1.35, 0.78, 0.58);
-  const cargoMesh = new THREE.Mesh(cargoGeo, cargoMat);
-  cargoMesh.position.set(-0.28, 0.59, 0);
-  group.add(cargoMesh);
+  // ── Cargo Upper (off-white) ───────────────────────────────────
+  const cargoUpperGeo = new THREE.BoxGeometry(1.22, 0.52, 0.52);
+  const cargoUpperMesh = new THREE.Mesh(cargoUpperGeo, cargoUpperMat);
+  cargoUpperMesh.position.set(-0.38, 0.79, 0);
+  group.add(cargoUpperMesh);
 
-  // Cargo rear wall (slightly darker inset)
-  const cargoRearGeo = new THREE.BoxGeometry(0.02, 0.72, 0.52);
-  const cargoRearMesh = new THREE.Mesh(cargoRearGeo, undercarriageMat);
-  cargoRearMesh.position.set(-0.96, 0.59, 0);
+  // ── Cargo Lower stripe (cyan) ─────────────────────────────────
+  const cargoLowerGeo = new THREE.BoxGeometry(1.22, 0.2, 0.52);
+  const cargoLowerMesh = new THREE.Mesh(cargoLowerGeo, cargoLowerMat);
+  cargoLowerMesh.position.set(-0.38, 0.46, 0);
+  group.add(cargoLowerMesh);
+
+  // ── Cargo rear wall (navy inset) ──────────────────────────────
+  const cargoRearGeo = new THREE.BoxGeometry(0.03, 0.7, 0.52);
+  const cargoRearMesh = new THREE.Mesh(cargoRearGeo, navyMat);
+  cargoRearMesh.position.set(-0.99, 0.62, 0);
   group.add(cargoRearMesh);
 
-  // ── Cab ──────────────────────────────────────────────────────
-  const cabGeo = new THREE.BoxGeometry(0.52, 0.68, 0.58);
+  // ── Cabin (turquoise, emissive on hover) ──────────────────────
+  const cabGeo = new THREE.BoxGeometry(0.56, 0.72, 0.52);
   const cabMesh = new THREE.Mesh(cabGeo, cabMat);
-  cabMesh.position.set(0.62, 0.54, 0);
+  cabMesh.position.set(0.65, 0.64, 0);
   group.add(cabMesh);
 
-  // Cab roof visor
-  const visorGeo = new THREE.BoxGeometry(0.46, 0.08, 0.54);
-  const visorMesh = new THREE.Mesh(visorGeo, cabDarkMat);
-  visorMesh.position.set(0.62, 0.92, 0);
-  group.add(visorMesh);
+  // Cab rounded top accent — slightly smaller box for roof softness
+  const cabRoofGeo = new THREE.BoxGeometry(0.48, 0.1, 0.48);
+  const cabRoofMesh = new THREE.Mesh(cabRoofGeo, navyMat);
+  cabRoofMesh.position.set(0.65, 1.03, 0);
+  group.add(cabRoofMesh);
 
-  // Windshield (angled slightly with scale trick)
-  const windshieldGeo = new THREE.BoxGeometry(0.04, 0.28, 0.42);
-  const windshieldMesh = new THREE.Mesh(windshieldGeo, glassMat);
-  windshieldMesh.position.set(0.89, 0.63, 0);
-  windshieldMesh.rotation.z = 0.15; // slight lean
+  // Windshield (darker tinted glass)
+  const windshieldGeo = new THREE.BoxGeometry(0.05, 0.3, 0.38);
+  const windshieldMat = new THREE.MeshStandardMaterial({
+    color: 0x1A3040,
+    roughness: 0.05,
+    metalness: 0.25,
+    transparent: true,
+    opacity: 0.7,
+  });
+  const windshieldMesh = new THREE.Mesh(windshieldGeo, windshieldMat);
+  windshieldMesh.position.set(0.94, 0.7, 0);
+  windshieldMesh.rotation.z = 0.12;
   group.add(windshieldMesh);
 
-  // Front bumper
-  const bumperGeo = new THREE.BoxGeometry(0.08, 0.12, 0.52);
-  const bumperMesh = new THREE.Mesh(bumperGeo, undercarriageMat);
-  bumperMesh.position.set(0.92, 0.26, 0);
+  // Front bumper (navy)
+  const bumperGeo = new THREE.BoxGeometry(0.1, 0.14, 0.48);
+  const bumperMesh = new THREE.Mesh(bumperGeo, navyMat);
+  bumperMesh.position.set(0.97, 0.3, 0);
   group.add(bumperMesh);
 
-  // Front grille strip
-  const grilleGeo = new THREE.BoxGeometry(0.04, 0.18, 0.38);
-  const grilleMesh = new THREE.Mesh(grilleGeo, undercarriageMat);
-  grilleMesh.position.set(0.90, 0.42, 0);
-  group.add(grilleMesh);
-
-  // Cab side panel accent (darker teal strip)
-  const accentGeo = new THREE.BoxGeometry(0.5, 0.06, 0.02);
-  const accentMesh = new THREE.Mesh(accentGeo, cabDarkMat);
-  accentMesh.position.set(0.62, 0.30, 0.29);
-  group.add(accentMesh);
-
-  // Junction between cargo and cab
-  const junctionGeo = new THREE.BoxGeometry(0.08, 0.68, 0.58);
-  const junctionMesh = new THREE.Mesh(junctionGeo, cabDarkMat);
-  junctionMesh.position.set(0.32, 0.54, 0);
+  // Junction strip between cargo and cab (navy divider)
+  const junctionGeo = new THREE.BoxGeometry(0.1, 0.72, 0.54);
+  const junctionMesh = new THREE.Mesh(junctionGeo, navyMat);
+  junctionMesh.position.set(0.32, 0.64, 0);
   group.add(junctionMesh);
 
-  // ── Undercarriage ─────────────────────────────────────────────
-  const frameGeo = new THREE.BoxGeometry(2.0, 0.08, 0.38);
-  const frameMesh = new THREE.Mesh(frameGeo, undercarriageMat);
-  frameMesh.position.set(-0.02, 0.18, 0);
+  // Undercarriage frame (navy)
+  const frameGeo = new THREE.BoxGeometry(2.0, 0.1, 0.42);
+  const frameMesh = new THREE.Mesh(frameGeo, navyMat);
+  frameMesh.position.set(-0.02, 0.2, 0);
   group.add(frameMesh);
 
-  // ── Wheels ───────────────────────────────────────────────────
-  // CylinderGeometry default: height along Y.
-  // We rotate PI/2 around X so the cylinder height is along Z → disc in XY plane.
-  // Then spinning the wheelGroup around Z axis = rolling forward.
+  // ── Rear Wheel ────────────────────────────────────────────────
   const wheelGroups = [];
 
-  function addWheel(x, z) {
+  function addRearWheel(z) {
     const wg = new THREE.Group();
-    wg.position.set(x, 0.2, z);
+    wg.position.set(-0.52, 0.24, z);
 
-    // Outer tire ring
-    const tireGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.11, 20);
+    const tireGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.12, 24);
     const tire = new THREE.Mesh(tireGeo, tireMat);
     tire.rotation.x = Math.PI / 2;
     wg.add(tire);
 
-    // Inner tread ring (slightly smaller)
-    const treadGeo = new THREE.CylinderGeometry(0.17, 0.17, 0.115, 20);
-    const tread = new THREE.Mesh(treadGeo, new THREE.MeshStandardMaterial({
-      color: 0x243040,
-      roughness: 0.98,
+    const innerRingGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.125, 24);
+    const innerRing = new THREE.Mesh(innerRingGeo, new THREE.MeshStandardMaterial({
+      color: 0x243040, roughness: 0.98,
     }));
-    tread.rotation.x = Math.PI / 2;
-    wg.add(tread);
+    innerRing.rotation.x = Math.PI / 2;
+    wg.add(innerRing);
 
-    // Hub cap
-    const hubGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.125, 12);
+    const hubGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.13, 12);
     const hub = new THREE.Mesh(hubGeo, hubMat);
     hub.rotation.x = Math.PI / 2;
     wg.add(hub);
 
-    // Hub center bolt
-    const boltGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.13, 6);
-    const bolt = new THREE.Mesh(boltGeo, undercarriageMat);
+    const boltGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.14, 6);
+    const bolt = new THREE.Mesh(boltGeo, navyMat);
     bolt.rotation.x = Math.PI / 2;
     wg.add(bolt);
 
@@ -158,19 +177,69 @@ export function createTruck() {
     return wg;
   }
 
-  // Two rear wheels (left/right)
-  addWheel(-0.52, +0.32);
-  addWheel(-0.52, -0.32);
-  // Two front wheels (left/right)
-  addWheel(0.72, +0.32);
-  addWheel(0.72, -0.32);
+  addRearWheel(+0.3);
+  addRearWheel(-0.3);
 
-  // ── Scale the whole truck down (it should be "small" on the sphere) ──
-  group.scale.setScalar(0.55);
+  // ── Front "C" Wheel (letter C extruded shape) ─────────────────
+  // The C opens to the right (+X direction = front of truck)
+  const cShape = new THREE.Shape();
+  const outerR = 0.22;
+  const innerR = 0.13;
+  const gapAngle = 0.75; // radians — gap opening faces +X (right / front)
+
+  // Outer arc: goes from gapAngle/2 to 2π - gapAngle/2 (counter-clockwise)
+  // Starting at top of gap, going counter-clockwise (the long way around the C)
+  cShape.absarc(0, 0, outerR, gapAngle / 2, Math.PI * 2 - gapAngle / 2, false);
+
+  // Connect to inner arc tip
+  const innerEndX = Math.cos(Math.PI * 2 - gapAngle / 2) * innerR;
+  const innerEndY = Math.sin(Math.PI * 2 - gapAngle / 2) * innerR;
+  cShape.lineTo(innerEndX, innerEndY);
+
+  // Inner arc: goes back (clockwise, i.e. reversed)
+  cShape.absarc(0, 0, innerR, Math.PI * 2 - gapAngle / 2, gapAngle / 2, true);
+  cShape.closePath();
+
+  const extrudeSettings = {
+    depth: 0.12,
+    bevelEnabled: false,
+  };
+
+  const cGeo = new THREE.ExtrudeGeometry(cShape, extrudeSettings);
+
+  // ExtrudeGeometry uses groups: [0] = sides, [1] = top cap, [2] = bottom cap
+  // We want: front face off-white, extruded sides navy
+  const cMesh = new THREE.Mesh(cGeo, [cWheelSideMat, cWheelFaceMat, cWheelFaceMat]);
+  // Rotate so C disc is in XY plane (ExtrudeGeometry extrudes along Z)
+  cMesh.rotation.y = Math.PI / 2; // make disc face outward (XY → ZY)
+  cMesh.rotation.z = Math.PI;     // flip so opening faces +X (front)
+  cMesh.position.set(0.78, 0.24, 0);
+
+  const cWheelGroup = new THREE.Group();
+  cWheelGroup.add(cMesh);
+  group.add(cWheelGroup);
+  wheelGroups.push(cWheelGroup);
+
+  // ── Scale & orient ─────────────────────────────────────────────
+  group.scale.setScalar(0.58);
+
+  // ── Hover glow meshes ─────────────────────────────────────────
+  // These are the meshes with emissive materials that glow on hover
+  const emissiveMeshes = [cabMesh, cargoUpperMesh, cMesh];
+  const emissiveMats   = [cabMat, cargoUpperMat, cWheelFaceMat];
+  const hubEmissiveMeshes = group.children.filter(c => c.isMesh && c.material === hubMat);
+
+  // Collect all truck mesh children for raycasting
+  const hoverMeshes = [];
+  group.traverse(child => {
+    if (child.isMesh) hoverMeshes.push(child);
+  });
 
   return {
     group,
     wheels: wheelGroups,
-    meshes: [cargoMesh, cabMesh, visorMesh],
+    emissiveMeshes,
+    emissiveMats,
+    hoverMeshes,
   };
 }
